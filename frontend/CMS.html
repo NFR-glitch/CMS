@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CMS - Content Management System untuk Profile Naqris Fatkhur Rozak">
+    <meta name="theme-color" content="#3b82f6">
+    <title>CMS Panel — Naqris</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="CMS.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>CMS Panel</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">Menu</div>
+            <a href="#" class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-articles" onclick="showSection('articles')">
+                <i class="fa-solid fa-newspaper"></i>
+                <span>Artikel</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-add" onclick="showSection('add')">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Tambah Artikel</span>
+            </a>
+
+            <div class="nav-label">Lainnya</div>
+            <a href="../index.html" class="nav-item">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Kembali ke Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="user-avatar">NF</div>
+                <div class="user-info">
+                    <span class="user-name">Naqris F.R</span>
+                    <span class="user-role">Administrator</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper" id="mainWrapper">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="topbar-toggle" id="topbarToggle" aria-label="Toggle sidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <span id="breadcrumbText">Dashboard</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="globalSearch" placeholder="Cari artikel..."
+                        oninput="handleGlobalSearch(this.value)">
+                </div>
+                <div class="topbar-time" id="topbarTime"></div>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <main class="content-area">
+
+            <!-- ======================== -->
+            <!-- SECTION: DASHBOARD       -->
+            <!-- ======================== -->
+            <section class="section active" id="section-dashboard">
+                <div class="section-header">
+                    <h1 class="section-title">Dashboard</h1>
+                    <p class="section-subtitle">Selamat datang di panel CMS!</p>
+                </div>
+
+                <!-- STATS CARDS -->
+                <div class="stats-grid">
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon"><i class="fa-solid fa-newspaper"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statTotal">0</span>
+                            <span class="stat-label">Total Artikel</span>
+                        </div>
+                        <div class="stat-bg-icon"><i class="fa-solid fa-newspaper"></i></div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon"><i class="fa-solid fa-pen-nib"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statWriters">0</span>
+                            <span class="stat-label">Penulis Unik</span>
+                        </div>
+                        <div class="stat-bg-icon"><i class="fa-solid fa-pen-nib"></i></div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <div class="stat-icon"><i class="fa-solid fa-tag"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statCategories">0</span>
+                            <span class="stat-label">Kategori</span>
+                        </div>
+                        <div class="stat-bg-icon"><i class="fa-solid fa-tag"></i></div>
+                    </div>
+                    <div class="stat-card stat-orange">
+                        <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statToday">0</span>
+                            <span class="stat-label">Artikel Hari Ini</span>
+                        </div>
+                        <div class="stat-bg-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                    </div>
+                </div>
+
+                <!-- RECENT ARTICLES -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Artikel Terbaru</h3>
+                            <button class="btn-ghost" onclick="showSection('articles')">Lihat Semua</button>
+                        </div>
+                        <div id="recentArticles" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-pie"></i> Kategori Artikel</h3>
+                        </div>
+                        <div id="categoryChart" class="category-chart"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================== -->
+            <!-- SECTION: ARTICLES LIST   -->
+            <!-- ======================== -->
+            <section class="section" id="section-articles">
+                <div class="section-header">
+                    <div>
+                        <h1 class="section-title">Manajemen Artikel</h1>
+                        <p class="section-subtitle">Kelola semua artikel Anda</p>
+                    </div>
+                    <button class="btn-primary" onclick="showSection('add')">
+                        <i class="fa-solid fa-plus"></i> Artikel Baru
+                    </button>
+                </div>
+
+                <!-- FILTER BAR -->
+                <div class="filter-bar">
+                    <div class="filter-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="articleSearch" placeholder="Cari judul atau penulis..."
+                            oninput="filterArticles()">
+                    </div>
+                    <select id="categoryFilter" onchange="filterArticles()">
+                        <option value="">Semua Kategori</option>
+                        <option value="Teknologi">Teknologi</option>
+                        <option value="Pendidikan">Pendidikan</option>
+                        <option value="Hiburan">Hiburan</option>
+                        <option value="Kesehatan">Kesehatan</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                    <select id="sortFilter" onchange="filterArticles()">
+                        <option value="newest">Terbaru</option>
+                        <option value="oldest">Terlama</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
+                    </select>
+                </div>
+
+                <!-- ARTICLE LIST -->
+                <div id="articleList" class="article-grid"></div>
+                <div id="emptyState" class="empty-state hidden">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <p>Belum ada artikel. Mulai tambahkan artikel baru!</p>
+                    <button class="btn-primary" onclick="showSection('add')">Tambah Artikel</button>
+                </div>
+            </section>
+
+            <!-- ======================== -->
+            <!-- SECTION: ADD / EDIT      -->
+            <!-- ======================== -->
+            <section class="section" id="section-add">
+                <div class="section-header">
+                    <div>
+                        <h1 class="section-title" id="formTitle">Tambah Artikel Baru</h1>
+                        <p class="section-subtitle" id="formSubtitle">Tulis artikel dan klik Simpan</p>
+                    </div>
+                    <button class="btn-ghost" onclick="cancelEdit()">
+                        <i class="fa-solid fa-xmark"></i> Batal
+                    </button>
+                </div>
+
+                <div class="form-layout">
+                    <!-- FORM MAIN -->
+                    <div class="form-main">
+                        <div class="form-card">
+                            <div class="form-group">
+                                <label for="inputJudul">
+                                    <i class="fa-solid fa-heading"></i> Judul Artikel
+                                </label>
+                                <input type="text" id="inputJudul" placeholder="Tulis judul artikel yang menarik..."
+                                    maxlength="100">
+                                <span class="char-count" id="judulCount">0/100</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputContent">
+                                    <i class="fa-solid fa-align-left"></i> Isi Artikel
+                                </label>
+                                <div class="editor-toolbar">
+                                    <button type="button" onclick="formatText('bold')" title="Bold"><i
+                                            class="fa-solid fa-bold"></i></button>
+                                    <button type="button" onclick="formatText('italic')" title="Italic"><i
+                                            class="fa-solid fa-italic"></i></button>
+                                    <button type="button" onclick="formatText('underline')" title="Underline"><i
+                                            class="fa-solid fa-underline"></i></button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" onclick="formatText('insertUnorderedList')"
+                                        title="Bullet List"><i class="fa-solid fa-list-ul"></i></button>
+                                    <button type="button" onclick="formatText('insertOrderedList')"
+                                        title="Numbered List"><i class="fa-solid fa-list-ol"></i></button>
+                                </div>
+                                <div id="inputContent" class="rich-editor" contenteditable="true"
+                                    data-placeholder="Tulis isi artikel di sini..."></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FORM SIDEBAR -->
+                    <div class="form-side">
+                        <div class="form-card">
+                            <h3 class="form-card-title"><i class="fa-solid fa-sliders"></i> Detail Artikel</h3>
+
+                            <div class="form-group">
+                                <label for="inputWriter">
+                                    <i class="fa-solid fa-user-pen"></i> Penulis
+                                </label>
+                                <input type="text" id="inputWriter" placeholder="Nama penulis" value="Naqris">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputCategory">
+                                    <i class="fa-solid fa-tag"></i> Kategori
+                                </label>
+                                <select id="inputCategory">
+                                    <option value="Teknologi">Teknologi</option>
+                                    <option value="Pendidikan">Pendidikan</option>
+                                    <option value="Hiburan">Hiburan</option>
+                                    <option value="Kesehatan">Kesehatan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputTags">
+                                    <i class="fa-solid fa-hashtag"></i> Tags
+                                </label>
+                                <input type="text" id="inputTags" placeholder="tag1, tag2, tag3">
+                                <small class="input-hint">Pisahkan dengan koma</small>
+                            </div>
+
+                            <p id="formError" class="form-error hidden"></p>
+
+                            <div class="form-actions">
+                                <button class="btn-primary btn-full" id="submitBtn" onclick="submitArticle()">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Artikel
+                                </button>
+                                <button class="btn-secondary btn-full" onclick="cancelEdit()">
+                                    <i class="fa-solid fa-xmark"></i> Batal
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PREVIEW CARD -->
+                        <div class="form-card preview-card">
+                            <h3 class="form-card-title"><i class="fa-solid fa-eye"></i> Preview</h3>
+                            <div id="previewBox" class="preview-box">
+                                <p class="preview-placeholder">Preview artikel akan muncul di sini...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3>Hapus Artikel?</h3>
+            <p>Artikel ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeDeleteModal()">Batal</button>
+                <button class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="CMS.js"></script>
+    <script src="push-demo.js"></script>
+</body>
+
+</html>

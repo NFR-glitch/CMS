@@ -1,0 +1,16 @@
+{
+  "name": "CMS Panel Naqris",
+  "short_name": "CMS",
+  "description": "CMS CRUD PWA untuk mengelola artikel",
+  "start_url": "./CMS.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/000000/news.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
