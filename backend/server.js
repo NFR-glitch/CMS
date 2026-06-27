@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const dotenv = require('dotenv');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
@@ -15,7 +15,7 @@ const dataDir = path.join(__dirname, 'data');
 const dataFile = path.join(dataDir, 'articles.json');
 
 let pool = null;
-let usingMySQL = false;
+let usingPostgres = false;
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
@@ -77,36 +77,40 @@ function normalizeArticle(article) {
 }
 
 async function initDatabase() {
-  const connectionString = process.env.MYSQL_URL || process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_URL;
 
   if (connectionString) {
-    pool = mysql.createPool(connectionString);
+    pool = new Pool({
+      connectionString,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    });
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS articles (
-        id VARCHAR(36) PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        content LONGTEXT NOT NULL,
-        writer VARCHAR(255) NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        tags JSON,
+        content TEXT NOT NULL,
+        writer TEXT NOT NULL,
+        category TEXT NOT NULL,
+        tags TEXT[] DEFAULT '{}',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    usingMySQL = true;
+    usingPostgres = true;
     return;
   }
 
-  usingMySQL = false;
+  usingPostgres = false;
   ensureDataStore();
 }
 
 async function listArticles() {
-  if (usingMySQL && pool) {
-    const [rows] = await pool.query(
+  if (usingPostgres && pool) {
+    const result = await pool.query(
       'SELECT id, title, content, writer, category, tags, created_at, updated_at FROM articles ORDER BY created_at DESC'
     );
-    return rows.map(normalizeArticle);
+    return result.rows.map(normalizeArticle);
   }
 
   const articles = readArticlesFile();
@@ -125,10 +129,10 @@ async function createArticle(payload) {
     updatedAt: new Date().toISOString(),
   };
 
-  if (usingMySQL && pool) {
+  if (usingPostgres && pool) {
     await pool.query(
-      'INSERT INTO articles (id, title, content, writer, category, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [article.id, article.title, article.content, article.writer, article.category, JSON.stringify(article.tags), article.createdAt, article.updatedAt]
+      'INSERT INTO articles (id, title, content, writer, category, tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [article.id, article.title, article.content, article.writer, article.category, article.tags, article.createdAt, article.updatedAt]
     );
     return article;
   }
@@ -140,18 +144,17 @@ async function createArticle(payload) {
 }
 
 async function updateArticle(id, payload) {
-  if (usingMySQL && pool) {
-    const [result] = await pool.query(
-      'UPDATE articles SET title = ?, content = ?, writer = ?, category = ?, tags = ?, updated_at = NOW() WHERE id = ?',
-      [payload.title, payload.content, payload.writer, payload.category, JSON.stringify(parseTags(payload.tags)), id]
+  if (usingPostgres && pool) {
+    const result = await pool.query(
+      'UPDATE articles SET title = $1, content = $2, writer = $3, category = $4, tags = $5, updated_at = NOW() WHERE id = $6 RETURNING id, title, content, writer, category, tags, created_at, updated_at',
+      [payload.title, payload.content, payload.writer, payload.category, payload.tags, id]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       throw new Error('Artikel tidak ditemukan');
     }
 
-    const [rows] = await pool.query('SELECT id, title, content, writer, category, tags, created_at, updated_at FROM articles WHERE id = ?', [id]);
-    return normalizeArticle(rows[0]);
+    return normalizeArticle(result.rows[0]);
   }
 
   const articles = readArticlesFile();
@@ -175,9 +178,9 @@ async function updateArticle(id, payload) {
 }
 
 async function deleteArticle(id) {
-  if (usingMySQL && pool) {
-    const [result] = await pool.query('DELETE FROM articles WHERE id = ?', [id]);
-    if (result.affectedRows === 0) {
+  if (usingPostgres && pool) {
+    const result = await pool.query('DELETE FROM articles WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
       throw new Error('Artikel tidak ditemukan');
     }
     return true;
@@ -194,7 +197,7 @@ async function deleteArticle(id) {
 }
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', mode: usingMySQL ? 'mysql' : 'file' });
+  res.json({ status: 'ok', mode: usingPostgres ? 'postgres' : 'file' });
 });
 
 app.get('/api/articles', async (req, res) => {
